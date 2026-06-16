@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labour Inspection Data Maturity Assessment</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 50px;
+            max-width: 950px;
+            width: 100%;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        h1 { color: #1e293b; font-size: 32px; margin-bottom: 12px; font-weight: 700; }
+        .subtitle { color: #64748b; font-size: 16px; margin-bottom: 40px; }
+        input { width: 100%; padding: 14px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; color: #1e293b; font-size: 14px; }
+        input:focus { outline: none; border-color: #3b82f6; background: white; }
+        .list { max-height: 450px; overflow-y: auto; }
+        button { width: 100%; padding: 12px; margin-bottom: 8px; background: white; color: #3b82f6; border: 2px solid #3b82f6; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        button:hover { background: #3b82f6; color: white; }
+        .hidden { display: none; }
+        .progress { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; margin: 30px 0; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 4px; }
+        .progress-text { color: #64748b; text-align: center; margin-bottom: 20px; font-size: 14px; font-weight: 500; }
+        .question-card { background: #f8fafc; padding: 24px; border-radius: 12px; margin-bottom: 24px; border-left: 4px solid #3b82f6; }
+        .question-label { color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        .question-title { color: #1e293b; font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+        .question-scenario { color: #475569; font-size: 13px; line-height: 1.6; margin-bottom: 18px; background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #cbd5e1; }
+        .options { display: flex; gap: 10px; flex-wrap: wrap; }
+        .opt { flex: 1; min-width: 70px; padding: 11px; background: white; color: #475569; border: 2px solid #cbd5e1; border-radius: 8px; cursor: pointer; text-align: center; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+        .opt:hover { border-color: #3b82f6; }
+        .opt.selected { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .badge { display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 14px 28px; border-radius: 8px; margin-bottom: 30px; font-weight: 600; font-size: 16px; }
+        .result-section { margin-bottom: 32px; }
+        .result-title { color: #1e293b; font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+        .result-description { color: #475569; font-size: 14px; line-height: 1.7; margin-bottom: 18px; }
+        .result-level { background: #f0f9ff; padding: 16px; border-radius: 8px; border-left: 4px solid #0284c7; margin-bottom: 16px; }
+        .result-level-title { color: #0284c7; font-weight: 600; margin-bottom: 6px; }
+        .result-level-text { color: #0c4a6e; font-size: 13px; }
+        .bar { width: 100%; height: 10px; background: #e2e8f0; border-radius: 5px; margin: 10px 0; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 5px; }
+        .category-item { margin-bottom: 20px; }
+        .category-name { color: #1e293b; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        .action-box { background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #3b82f6; }
+        .action-title { color: #1e40af; font-weight: 600; margin-bottom: 8px; font-size: 13px; }
+        .action-text { color: #1e40af; font-size: 13px; line-height: 1.6; }
+        .button-group { display: flex; gap: 12px; margin-top: 30px; }
+        .button-group button { flex: 1; padding: 14px; font-size: 15px; font-weight: 600; }
+        .back-btn { background: #f1f5f9; color: #475569; border: 2px solid #cbd5e1; }
+        .back-btn:hover { background: #e2e8f0; }
+        .submit-btn { background: #3b82f6; color: white; border: 2px solid #3b82f6; }
+        .submit-btn:hover { background: #2563eb; }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ladder { margin-top: 20px; }
+        .ladder-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .ladder-num { color: #64748b; font-weight: 700; min-width: 25px; }
+        .ladder-bar { flex: 1; height: 24px; background: #e2e8f0; border-radius: 4px; position: relative; overflow: hidden; }
+        .ladder-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 4px; }
+        .ladder-label { color: #475569; font-size: 12px; font-weight: 600; }
+        @media (max-width: 640px) {
+            .container { padding: 25px; }
+            h1 { font-size: 24px; }
+            .button-group { flex-direction: column; }
+            .opt { min-width: 50px; padding: 9px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SCREEN 1: SELECT NAME -->
+        <div id="screen1">
+            <h1>Labour Inspection Data Maturity Assessment</h1>
+            <p class="subtitle">Agile Labour Inspection & Digital Transformation Course — ITCILO</p>
+            <input id="search" type="text" placeholder="Search for your name or country..." onkeyup="filterList()">
+            <div class="list" id="list"></div>
+        </div>
+
+        <!-- SCREEN 2: QUESTIONS -->
+        <div id="screen2" class="hidden">
+            <h1 style="margin-bottom:6px;">Your Assessment</h1>
+            <p class="subtitle" id="name2" style="margin-bottom:20px;"></p>
+            <div class="progress"><div class="progress-bar" id="prog" style="width:0%"></div></div>
+            <div class="progress-text" id="prog-text">0 of 6 answered</div>
+            <div id="questions"></div>
+            <div class="button-group">
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <button class="submit-btn" id="submit-btn" onclick="showResults()" disabled>See Results →</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULTS -->
+        <div id="screen3" class="hidden">
+            <h1 style="margin-bottom:6px;">Your Data Maturity Profile</h1>
+            <p class="subtitle" id="name3" style="margin-bottom:30px;"></p>
+            <div id="results"></div>
+            <button onclick="startOver()" style="width:100%; padding:14px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:15px; margin-top:30px;">← Take Assessment Again</button>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            names: [
+                "Matheus Alves Klein Viana (Brazil)", "Mlungski Mdumseni Mabuza (Eswatini)", "Sinya Godwell Mtawali (Malawi)",
+                "Nonyelum Calista Anayo-Uzochukwu (Nigeria)", "Yusuf Halilu (Nigeria)", "Muhammad Duri Haruna (Nigeria)",
+                "Nkiru Theresa Nwana (Nigeria)", "Christopher Dio Okpanachi (Nigeria)", "Linda Ogadinma Okpara (Nigeria)",
+                "Margaret Israel Udoh (Nigeria)", "Hamida Ali (Tunisia)", "Mert Eksi (Türkiye)", "Vedat Üçtas (Türkiye)",
+                "Vadym Bondar (Ukraine)", "Ihor Dehnera (Ukraine)", "Oleh Honchar (Ukraine)", "Oleksandr Ihnatov (Ukraine)",
+                "Olena Konovalova (Ukraine)", "Svitlana Nichyk (Ukraine)", "Ruslan Pavlovskyi (Ukraine)",
+                "Oleksandr Rozumnyi (Ukraine)", "Roman Semchuk (Ukraine)", "Sergii Baidiuk (Ukraine)",
+                "Andrii Tymenko (Ukraine)", "Ada (ILO)", "Rumsha (ILO)", "Tetyana (ILO)", "ITCILO (Testing)", "Guest"
+            ],
+            questions: [
+                {
+                    id: 'data_storage',
+                    label: 'Data Storage & Documentation',
+                    title: 'How are your inspection records currently stored?',
+                    scenario: 'An inspector returns from a workplace visit with findings about undeclared workers and OSH violations. Where does this information go? Can you quickly retrieve it for follow-up inspections or to cross-check company history?'
+                },
+                {
+                    id: 'data_linking',
+                    label: 'Data Integration & Linkage',
+                    title: 'Can your data connect across different sources?',
+                    scenario: 'You need to identify a company with a history of labour law violations. Can your inspection records automatically link with business registry, tax authority, and social security databases to give you the complete picture?'
+                },
+                {
+                    id: 'targeting_strategy',
+                    label: 'Risk-Based Targeting',
+                    title: 'How do you decide which workplaces to inspect?',
+                    scenario: 'Your district has 5,000 registered businesses. You have capacity for 200 inspections this year. Do you visit them randomly, based on complaints only, or use data on violation patterns, worker demographics, and previous findings to identify high-risk cases?'
+                },
+                {
+                    id: 'data_quality',
+                    label: 'Data Quality & Governance',
+                    title: 'How consistent and reliable is your inspection data?',
+                    scenario: 'Two inspectors visit similar factories and find the same violations, but one records it as "undeclared work" and another as "informal employment." Can you spot these inconsistencies? Do you have standardized codes and validation rules in place?'
+                },
+                {
+                    id: 'analytics_reporting',
+                    label: 'Analytics, Insight & Learning',
+                    title: 'How do you understand trends in your inspection data?',
+                    scenario: 'Your director asks: "Which sectors have the highest violation rates? Where is undeclared work most common? Are violations trending up or down? Which inspectors are most effective?" Can you answer with data, or do you rely on memory and hunches?'
+                },
+                {
+                    id: 'capacity_skills',
+                    label: 'Technology, Tools & Capacity',
+                    title: 'What digital tools and skills do you have?',
+                    scenario: 'Your inspectorate wants to shift from paper to digital, implement targeting algorithms, and use predictive analytics. Do you have the IT infrastructure, staff training, technical support, and digital literacy to make this transformation work?'
+                }
+            ],
+            levels: [
+                {
+                    lvl: 1,
+                    name: 'Analog',
+                    color: '#dc2626',
+                    emoji: '📋',
+                    summary: 'Paper-based inspection records; limited digital documentation; reactive inspection scheduling',
+                    characteristics: [
+                        'Inspection findings recorded in paper notebooks or handwritten forms',
+                        'Data stored in filing cabinets; difficult to search or retrieve',
+                        'No connection between inspection data and other government databases',
+                        'Inspection targets decided based on complaints or random selection',
+                        'No systematic analysis of violation patterns or trends'
+                    ],
+                    actions: [
+                        'Digitize core inspection records (worker data, violations found, employer details)',
+                        'Create standardized data entry forms and codes for common violations',
+                        'Build a basic electronic filing system (spreadsheet or simple database)',
+                        'Train inspectors on consistent data collection practices'
+                    ]
+                },
+                {
+                    lvl: 2,
+                    name: 'Digitized',
+                    color: '#f97316',
+                    emoji: '💾',
+                    summary: 'Digital systems exist but operate in silos; limited cross-system communication; inconsistent data quality',
+                    characteristics: [
+                        'Inspection data entered into electronic systems (Excel, basic case management)',
+                        'Some data standardization, but inconsistencies still exist between inspectors',
+                        'IT systems do not communicate with each other (business registry, social security, tax authority)',
+                        'Inspectors can access past inspection records but cannot see related data from other agencies',
+                        'Basic reports generated manually; limited ability to identify patterns'
+                    ],
+                    actions: [
+                        'Establish data quality standards: standardized violation codes, mandatory fields, validation rules',
+                        'Create a dedicated inspection case management system (not just Excel)',
+                        'Document and reduce data entry variation between different inspectors',
+                        'Begin planning for data linkage with external registers (business, tax, social security)',
+                        'Designate a data officer or coordinator responsible for data governance'
+                    ]
+                },
+                {
+                    lvl: 3,
+                    name: 'Integrated',
+                    color: '#eab308',
+                    emoji: '🔗',
+                    summary: 'Systems linked to external registers; foundational data analytics; structured targeting',
+                    characteristics: [
+                        'Inspection system integrated with business registry, tax authority, and social security databases',
+                        'Inspectors can see employer history, registered workers, and tax compliance status',
+                        'Basic targeting algorithms identify high-risk businesses based on sector, size, previous violations',
+                        'Regular data quality audits and error corrections',
+                        'Monthly or quarterly reports on violation trends, sector performance, inspector productivity',
+                        'Data governance policies and procedures documented'
+                    ],
+                    actions: [
+                        'Implement routine data quality checks and automated validation rules',
+                        'Develop simple targeting models: prioritize by sector violation rates, complaint history, firm size',
+                        'Create monthly dashboards showing violation patterns, trending sectors, geographic hotspots',
+                        'Train inspectors to use integrated data for planning and decision-making',
+                        'Establish inter-agency data sharing agreements and protocols'
+                    ]
+                },
+                {
+                    lvl: 4,
+                    name: 'Analytical',
+                    color: '#22c55e',
+                    emoji: '📊',
+                    summary: 'Predictive risk scoring; routine trend analysis; data-informed strategic planning',
+                    characteristics: [
+                        'Risk scoring models identify workplaces most likely to have labour law violations',
+                        'Targeting combines multiple data points: sector, worker demographics, complaint history, previous findings',
+                        'Real-time monitoring: inspectors can see trends as they happen',
+                        'Regular analysis of inspection effectiveness: which approaches work best? Which inspectors most effective?',
+                        'Strategic decisions (resource allocation, campaign focus) driven by data',
+                        'Dashboards and reports customized for different users (inspectors, managers, directors)'
+                    ],
+                    actions: [
+                        'Develop predictive models using historical inspection data (machine learning optional)',
+                        'Pilot risk-based targeting in one district; measure improvement in violation detection',
+                        'Create inspector performance dashboards (violations found, compliance rates, follow-up effectiveness)',
+                        'Use data to design targeted campaigns (e.g., focus on construction sector, undeclared work)',
+                        'Regularly evaluate whether data-driven strategies improve inspection effectiveness'
+                    ]
+                },
+                {
+                    lvl: 5,
+                    name: 'Predictive & AI-Enhanced',
+                    color: '#06b6d4',
+                    emoji: '🤖',
+                    summary: 'Machine learning models; explainable AI insights; real-time adaptive targeting; continuous learning',
+                    characteristics: [
+                        'ML models predict violation likelihood with high accuracy and explain their reasoning',
+                        'Real-time data feeds enable inspectors to adapt targeting mid-year based on emerging patterns',
+                        'Multi-risk models integrate labour law, OSH, social security, wage theft, and informal economy indicators',
+                        'Continuous feedback loops: inspection results improve model accuracy over time',
+                        'Automated compliance monitoring and early warning systems',
+                        'Cross-agency coordination powered by integrated data and shared intelligence',
+                        'Privacy, fairness, and ethical AI carefully managed'
+                    ],
+                    actions: [
+                        'Deploy ML models for predictive targeting across all districts',
+                        'Establish ethics and fairness review for AI-based decisions (avoid discriminatory targeting)',
+                        'Create feedback loops: inspection results continuously improve model predictions',
+                        'Expand to multi-risk models: combine labour, OSH, wage, informality, and supply chain data',
+                        'Build automated early-warning systems for high-risk scenarios (seasonal migration, undeclared hiring)',
+                        'Partner with universities or research institutes for advanced analytics'
+                    ]
+                }
+            ]
+        };
+
+        let state = { name: '', answers: {} };
+
+        function init() {
+            renderList();
+        }
+
+        function renderList() {
+            let html = '';
+            data.names.forEach(n => {
+                html += `<button onclick="selectName('${n}')">${n}</button>`;
+            });
+            document.getElementById('list').innerHTML = html;
+        }
+
+        function filterList() {
+            const search = document.getElementById('search').value.toLowerCase();
+            const filtered = data.names.filter(n => n.toLowerCase().includes(search));
+            let html = '';
+            filtered.forEach(n => {
+                html += `<button onclick="selectName('${n}')">${n}</button>`;
+            });
+            document.getElementById('list').innerHTML = html;
+        }
+
+        function selectName(name) {
+            state.name = name;
+            state.answers = {};
+            document.getElementById('screen1').classList.add('hidden');
+            document.getElementById('screen2').classList.remove('hidden');
+            document.getElementById('name2').textContent = name;
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            let html = '';
+            data.questions.forEach(q => {
+                html += `
+                    <div class="question-card">
+                        <div class="question-label">${q.label}</div>
+                        <div class="question-title">${q.title}</div>
+                        <div class="question-scenario">📍 <strong>Scenario:</strong> ${q.scenario}</div>
+                        <div class="options">
+                            ${[1,2,3,4,5].map(i => `<button class="opt" onclick="answer('${q.id}', ${i})" data-q="${q.id}" data-v="${i}"> ${i} </button>`).join('')}
+                        </div>
+                        <div style="color:#94a3b8; font-size:11px; margin-top:12px;">1 = Analog  |  5 = Fully Advanced</div>
+                    </div>
+                `;
+            });
+            document.getElementById('questions').innerHTML = html;
+        }
+
+        function answer(qid, val) {
+            state.answers[qid] = val;
+            document.querySelectorAll(`[data-q="${qid}"]`).forEach(b => b.classList.remove('selected'));
+            document.querySelector(`[data-q="${qid}"][data-v="${val}"]`).classList.add('selected');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const count = Object.keys(state.answers).length;
+            const pct = (count / 6) * 100;
+            document.getElementById('prog').style.width = pct + '%';
+            document.getElementById('prog-text').textContent = `${count} of 6 answered`;
+            document.getElementById('submit-btn').disabled = count < 6;
+        }
+
+        function showResults() {
+            const vals = Object.values(state.answers);
+            const avg = Math.round(vals.reduce((a,b)=>a+b,0) / vals.length);
+            const lvl = Math.max(1, Math.min(5, avg));
+            const level = data.levels[lvl - 1];
+            const nextLevel = lvl < 5 ? data.levels[lvl] : null;
+
+            let html = `
+                <div class="badge" style="background: linear-gradient(135deg, ${level.color} 0%, ${level.color}cc 100%);">
+                    ${level.emoji} Level ${lvl}: ${level.name}
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">Your Current State</div>
+                    <div class="result-description">${level.summary}</div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">Category Performance</div>
+            `;
+
+            data.questions.forEach(q => {
+                const score = state.answers[q.id] || 0;
+                html += `
+                    <div class="category-item">
+                        <div class="category-name">${q.label}</div>
+                        <div class="bar"><div class="bar-fill" style="width:${(score/5)*100}%;"></div></div>
+                        <div style="color:#64748b; font-size:12px;">Score: ${score}/5</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">What This Means</div>
+                    <div style="background:#f8fafc; padding:18px; border-radius:8px; border-left:4px solid ${level.color};">
+                        <div style="color:#1e293b; font-weight:600; margin-bottom:10px;">Key Characteristics at Level ${lvl}:</div>
+                        <ul style="margin-left:20px; color:#475569; font-size:13px; line-height:1.8;">
+                            ${level.characteristics.map(c => `<li style="margin-bottom:6px;">${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-title">Recommended Next Steps</div>
+                    <div style="display:grid; gap:12px;">
+                        ${level.actions.map(a => `
+                            <div class="action-box">
+                                <div class="action-title">✓ ${a}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            if (nextLevel) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-title">Path to Level ${lvl + 1}: ${nextLevel.name}</div>
+                        <div class="result-level">
+                            <div class="result-level-title">${nextLevel.emoji} What Level ${lvl + 1} Looks Like</div>
+                            <div class="result-level-text">${nextLevel.summary}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="result-section">
+                    <div class="result-title">Your Data Maturity Journey</div>
+                    <div class="ladder">
+            `;
+
+            data.levels.forEach((l, i) => {
+                const isAtOrBelow = i < lvl;
+                const isCurrent = i === (lvl - 1);
+                html += `
+                    <div class="ladder-item">
+                        <div class="ladder-num" style="color:${isCurrent ? l.color : '#cbd5e1'};">${l.lvl}</div>
+                        <div class="ladder-bar">
+                            <div class="ladder-bar-fill" style="width:${isCurrent ? '100%' : isAtOrBelow ? '100%' : '0%'}; background:${l.color};"></div>
+                        </div>
+                        <div class="ladder-label" style="color:${isCurrent ? '#1e293b' : '#94a3b8'}; font-weight:${isCurrent ? '700' : '500'};">${l.name}${isCurrent ? ' (You are here)' : ''}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('name3').textContent = state.name;
+            document.getElementById('results').innerHTML = html;
+            document.getElementById('screen2').classList.add('hidden');
+            document.getElementById('screen3').classList.remove('hidden');
+        }
+
+        function goBack() {
+            document.getElementById('screen2').classList.add('hidden');
+            document.getElementById('screen1').classList.remove('hidden');
+        }
+
+        function startOver() {
+            state = { name: '', answers: {} };
+            document.getElementById('search').value = '';
+            document.getElementById('screen3').classList.add('hidden');
+            document.getElementById('screen1').classList.remove('hidden');
+            renderList();
+        }
+
+        init();
+    </script>
+</body>
+</html>
