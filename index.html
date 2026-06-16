@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Maturity Ladder - Labour Inspection</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { color: #e2e8f0; font-size: 28px; font-weight: bold; margin-bottom: 8px; }
+        .header p { color: #cbd5e1; font-size: 14px; }
+        .section { margin-bottom: 30px; }
+        .label { color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        select:focus, input:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1); }
+        .question-group { background: rgba(51, 65, 85, 0.3); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(71, 85, 105, 0.3); }
+        .question-text { color: #e2e8f0; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+        .options { display: flex; gap: 10px; flex-wrap: wrap; }
+        .option {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            color: #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .option:hover { border-color: #60a5fa; }
+        .option.selected { background: #3b82f6; color: white; border-color: #2563eb; }
+        button {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            width: 100%;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .progress-bar {
+            background: rgba(71, 85, 105, 0.3);
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); height: 100%; transition: width 0.3s; }
+        .results { margin-top: 30px; }
+        .level-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .category-result { margin-bottom: 20px; }
+        .category-name { color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        .category-bar {
+            background: rgba(71, 85, 105, 0.3);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .category-bar-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); height: 100%; transition: width 0.3s; }
+        .characteristics { background: rgba(51, 65, 85, 0.3); padding: 16px; border-radius: 8px; margin-top: 20px; }
+        .char-title { color: #e2e8f0; font-weight: 600; margin-bottom: 12px; }
+        .char-item { color: #cbd5e1; font-size: 13px; margin-bottom: 8px; }
+        .next-steps { background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #3b82f6; }
+        .next-title { color: #e2e8f0; font-weight: 600; margin-bottom: 10px; }
+        .next-item { color: #cbd5e1; font-size: 13px; margin-bottom: 6px; }
+        .ladder-viz { margin-top: 30px; }
+        .ladder-level { display: flex; align-items: center; margin-bottom: 12px; }
+        .ladder-label { color: #cbd5e1; font-size: 12px; width: 120px; }
+        .ladder-bar { flex: 1; height: 20px; background: rgba(71, 85, 105, 0.3); border-radius: 4px; margin: 0 12px; }
+        .ladder-bar.active { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; }
+        .button-group button { flex: 1; }
+        .hidden { display: none; }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 22px; }
+            .options { gap: 8px; }
+            .option { min-width: 80px; padding: 8px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script>
+        const { useState } = React;
+
+        const participants = [
+            "Matheus Alves Klein Viana (Brazil)",
+            "Mlungisi Mdumseni Mabuza (Eswatini)",
+            "Sinya Godwell Mtawali (Malawi)",
+            "Nonyelum Calista Anayo-Uzochukwu (Nigeria)",
+            "Yusuf Halilu (Nigeria)",
+            "Muhammad Duri Haruna (Nigeria)",
+            "Nkiru Theresa Nwana (Nigeria)",
+            "Christopher Dio Okpanachi (Nigeria)",
+            "Linda Ogadinma Okpara (Nigeria)",
+            "Margaret Israel Udoh (Nigeria)",
+            "Hamida Ali (Tunisia)",
+            "Mert Eksi (Türkiye)",
+            "Vedat Üçtas (Türkiye)",
+            "Vadym Bondar (Ukraine)",
+            "Ihor Dehnera (Ukraine)",
+            "Oleh Honchar (Ukraine)",
+            "Oleksandr Ihnatov (Ukraine)",
+            "Olena Konovalova (Ukraine)",
+            "Svitlana Nichyk (Ukraine)",
+            "Ruslan Pavlovskyi (Ukraine)",
+            "Oleksandr Rozumnyi (Ukraine)",
+            "Roman Semchuk (Ukraine)",
+            "Sergii Baidiuk (Ukraine)",
+            "Andrii Tymenko (Ukraine)",
+            "Ada (ILO)",
+            "Rumsha (ILO)",
+            "Tetyana (ILO)",
+            "ITCILO (Testing)",
+            "Guest"
+        ];
+
+        const questions = [
+            { id: 'storage', label: 'Data Storage', question: 'How are your core labour inspection records stored?' },
+            { id: 'integration', label: 'Data Integration', question: 'How connected are your data systems?' },
+            { id: 'targeting', label: 'Targeting & Risk', question: 'How do you identify which workplaces to inspect?' },
+            { id: 'quality', label: 'Data Quality', question: 'How is data quality managed?' },
+            { id: 'analytics', label: 'Analytics & Reporting', question: 'How do you analyze and report inspection data?' },
+            { id: 'technology', label: 'Technology & Capacity', question: 'What technology and training are available?' }
+        ];
+
+        const maturityLevels = [
+            { level: 1, name: 'Analog', color: '#ef4444' },
+            { level: 2, name: 'Digitized', color: '#f97316' },
+            { level: 3, name: 'Integrated', color: '#eab308' },
+            { level: 4, name: 'Analytical', color: '#22c55e' },
+            { level: 5, name: 'Predictive/AI', color: '#06b6d4' }
+        ];
+
+        const characteristics = {
+            1: 'Paper-based records; limited digital documentation',
+            2: 'Digital systems exist but operate in silos; limited cross-system communication',
+            3: 'Multiple systems linked to external registers; foundational data sharing',
+            4: 'Routine trend analysis; manual risk scoring; organized dashboards',
+            5: 'ML-powered predictions; explainable AI outputs; proactive risk identification'
+        };
+
+        const nextSteps = {
+            1: 'Digitize core datasets and establish data entry standards',
+            2: 'Link systems to external labour registers and national databases',
+            3: 'Implement routine data quality checks and trend analysis processes',
+            4: 'Pilot machine learning models for predictive targeting',
+            5: 'Expand to multi-risk models; integrate real-time monitoring'
+        };
+
+        function DataMaturityLadder() {
+            const [stage, setStage] = useState('name'); // 'name', 'questions', 'results'
+            const [selectedName, setSelectedName] = useState('');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [answers, setAnswers] = useState({});
+
+            const filteredParticipants = participants.filter(p =>
+                p.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const handleNameSelect = (name) => {
+                setSelectedName(name);
+                setAnswers({});
+                setStage('questions');
+            };
+
+            const handleAnswer = (questionId, value) => {
+                setAnswers({ ...answers, [questionId]: value });
+            };
+
+            const calculateResults = () => {
+                const values = Object.values(answers).map(Number);
+                const average = values.length > 0 ? Math.round(values.reduce((a, b) => a + b) / values.length) : 1;
+                return Math.max(1, Math.min(5, average));
+            };
+
+            const overallLevel = calculateResults();
+
+            const renderNameSelection = () => (
+                <div className="container">
+                    <div className="header">
+                        <h1>Data Maturity Ladder</h1>
+                        <p>Labour Inspection Digital Transformation Assessment</p>
+                    </div>
+                    <div className="section">
+                        <div className="label">Select Your Name</div>
+                        <input
+                            type="text"
+                            placeholder="Search for your name..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div style={{ maxHeight: '400px', overflowY: 'auto', marginTop: '20px' }}>
+                        {filteredParticipants.map((participant, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => handleNameSelect(participant)}
+                                style={{
+                                    marginBottom: '10px',
+                                    background: 'rgba(30, 41, 59, 0.8)',
+                                    color: '#e2e8f0',
+                                    border: '1px solid rgba(71, 85, 105, 0.5)',
+                                    padding: '12px',
+                                    width: '100%',
+                                    textAlign: 'left'
+                                }}
+                            >
+                                {participant}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const renderQuestions = () => {
+                const answeredCount = Object.keys(answers).length;
+                const progress = (answeredCount / questions.length) * 100;
+
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <h1>Assessment Questions</h1>
+                            <p style={{ marginTop: '8px', color: '#cbd5e1' }}>{selectedName}</p>
+                        </div>
+                        <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
+                        </div>
+                        <div style={{ color: '#cbd5e1', textAlign: 'center', marginBottom: '20px', fontSize: '13px' }}>
+                            {answeredCount} of {questions.length} answered
+                        </div>
+                        {questions.map((q) => (
+                            <div key={q.id} className="question-group">
+                                <div className="label">{q.label}</div>
+                                <div className="question-text">{q.question}</div>
+                                <div className="options">
+                                    {[1, 2, 3, 4, 5].map((level) => (
+                                        <button
+                                            key={level}
+                                            onClick={() => handleAnswer(q.id, level)}
+                                            className={`option ${answers[q.id] === level ? 'selected' : ''}`}
+                                            style={{
+                                                background: answers[q.id] === level ? '#3b82f6' : 'rgba(30, 41, 59, 0.8)',
+                                                color: answers[q.id] === level ? 'white' : '#cbd5e1',
+                                                border: answers[q.id] === level ? '1px solid #2563eb' : '1px solid rgba(71, 85, 105, 0.5)'
+                                            }}
+                                        >
+                                            {level}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                        <div className="button-group" style={{ marginTop: '30px' }}>
+                            <button onClick={() => { setStage('name'); setSelectedName(''); setAnswers({}); }} style={{ background: 'rgba(71, 85, 105, 0.5)' }}>Back</button>
+                            <button onClick={() => setStage('results')} disabled={answeredCount < questions.length}>See Results</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderResults = () => {
+                const categoryScores = questions.map(q => ({ ...q, score: answers[q.id] || 0 }));
+
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <h1>Your Assessment Results</h1>
+                            <p style={{ marginTop: '8px', color: '#cbd5e1' }}>{selectedName}</p>
+                        </div>
+                        <div className="results">
+                            <div className="level-badge" style={{ background: `linear-gradient(135deg, ${maturityLevels[overallLevel - 1].color} 0%, ${maturityLevels[overallLevel - 1].color} 100%)` }}>
+                                Level {overallLevel}: {maturityLevels[overallLevel - 1].name}
+                            </div>
+                            <div style={{ marginBottom: '30px' }}>
+                                {categoryScores.map(cat => (
+                                    <div key={cat.id} className="category-result">
+                                        <div className="category-name">{cat.label}</div>
+                                        <div className="category-bar">
+                                            <div className="category-bar-fill" style={{ width: `${(cat.score / 5) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="characteristics">
+                                <div className="char-title">Level {overallLevel} Characteristics:</div>
+                                <div className="char-item">{characteristics[overallLevel]}</div>
+                            </div>
+                            <div className="next-steps">
+                                <div className="next-title">Next Steps:</div>
+                                <div className="next-item">{nextSteps[overallLevel]}</div>
+                            </div>
+                            <div className="ladder-viz">
+                                <div style={{ color: '#cbd5e1', fontWeight: '600', marginBottom: '16px', fontSize: '14px' }}>Your Position on the Maturity Ladder:</div>
+                                {[1, 2, 3, 4, 5].map(level => (
+                                    <div key={level} className="ladder-level">
+                                        <div className="ladder-label">Level {level}: {maturityLevels[level - 1].name}</div>
+                                        <div className="ladder-bar" style={{ background: level <= overallLevel ? maturityLevels[level - 1].color : 'rgba(71, 85, 105, 0.3)' }}></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="button-group" style={{ marginTop: '30px' }}>
+                            <button onClick={() => { setStage('name'); setSelectedName(''); setAnswers({}); setSearchTerm(''); }} style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)' }}>Start Over</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <>
+                    {stage === 'name' && renderNameSelection()}
+                    {stage === 'questions' && renderQuestions()}
+                    {stage === 'results' && renderResults()}
+                </>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DataMaturityLadder />);
+    </script>
+</body>
+</html>
