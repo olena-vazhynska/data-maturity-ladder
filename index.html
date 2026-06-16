@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Maturity Ladder - Labour Inspection</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(71, 85, 105, 0.3);
+        }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { color: #e2e8f0; font-size: 28px; font-weight: bold; margin-bottom: 8px; }
+        .header p { color: #cbd5e1; font-size: 14px; }
+        .label { color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        input:focus { outline: none; border-color: #60a5fa; }
+        .participant-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .participant-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .participant-btn:hover { border-color: #60a5fa; background: rgba(30, 41, 59, 1); }
+        .question-group { background: rgba(51, 65, 85, 0.3); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(71, 85, 105, 0.3); }
+        .question-text { color: #e2e8f0; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
+        .options { display: flex; gap: 10px; flex-wrap: wrap; }
+        .option {
+            flex: 1;
+            min-width: 60px;
+            padding: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            color: #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: center;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-weight: 600;
+        }
+        .option:hover { border-color: #60a5fa; }
+        .option.selected { background: #3b82f6; color: white; border-color: #2563eb; }
+        button {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            width: 100%;
+            font-family: inherit;
+        }
+        button:hover { transform: translateY(-2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .progress-bar {
+            background: rgba(71, 85, 105, 0.3);
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        .progress-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); height: 100%; transition: width 0.3s; }
+        .progress-text { color: #cbd5e1; text-align: center; margin-bottom: 20px; font-size: 13px; }
+        .level-badge {
+            display: inline-block;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .category-result { margin-bottom: 20px; }
+        .category-name { color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        .category-bar {
+            background: rgba(71, 85, 105, 0.3);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .category-bar-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); height: 100%; transition: width 0.3s; }
+        .characteristics { background: rgba(51, 65, 85, 0.3); padding: 16px; border-radius: 8px; margin-top: 20px; }
+        .char-title { color: #e2e8f0; font-weight: 600; margin-bottom: 12px; }
+        .char-item { color: #cbd5e1; font-size: 13px; }
+        .next-steps { background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #3b82f6; }
+        .next-title { color: #e2e8f0; font-weight: 600; margin-bottom: 10px; }
+        .next-item { color: #cbd5e1; font-size: 13px; }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; }
+        .button-group button { flex: 1; }
+        .hidden { display: none; }
+        @media (max-width: 640px) {
+            .container { padding: 20px; }
+            .header h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- NAME SELECTION SCREEN -->
+        <div id="nameScreen">
+            <div class="header">
+                <h1>Data Maturity Ladder</h1>
+                <p>Labour Inspection Digital Transformation Assessment</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div class="label">Select Your Name</div>
+                <input id="searchInput" type="text" placeholder="Search for your name..." />
+            </div>
+            <div class="participant-list" id="participantList"></div>
+        </div>
+
+        <!-- QUESTIONS SCREEN -->
+        <div id="questionsScreen" class="hidden">
+            <div class="header">
+                <h1>Assessment Questions</h1>
+                <p id="selectedNameDisplay" style="margin-top: 8px; color: #cbd5e1;"></p>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="progressText">0 of 6 answered</div>
+            <div id="questionsContainer"></div>
+            <div class="button-group">
+                <button onclick="goBack()">Back</button>
+                <button id="submitBtn" onclick="submitAnswers()" disabled>See Results</button>
+            </div>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="resultsScreen" class="hidden">
+            <div class="header">
+                <h1>Your Assessment Results</h1>
+                <p id="resultNameDisplay" style="margin-top: 8px; color: #cbd5e1;"></p>
+            </div>
+            <div id="resultsContent"></div>
+            <div class="button-group">
+                <button onclick="startOver()" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const participants = [
+            "Matheus Alves Klein Viana (Brazil)",
+            "Mlungisi Mdumseni Mabuza (Eswatini)",
+            "Sinya Godwell Mtawali (Malawi)",
+            "Nonyelum Calista Anayo-Uzochukwu (Nigeria)",
+            "Yusuf Halilu (Nigeria)",
+            "Muhammad Duri Haruna (Nigeria)",
+            "Nkiru Theresa Nwana (Nigeria)",
+            "Christopher Dio Okpanachi (Nigeria)",
+            "Linda Ogadinma Okpara (Nigeria)",
+            "Margaret Israel Udoh (Nigeria)",
+            "Hamida Ali (Tunisia)",
+            "Mert Eksi (Türkiye)",
+            "Vedat Üçtas (Türkiye)",
+            "Vadym Bondar (Ukraine)",
+            "Ihor Dehnera (Ukraine)",
+            "Oleh Honchar (Ukraine)",
+            "Oleksandr Ihnatov (Ukraine)",
+            "Olena Konovalova (Ukraine)",
+            "Svitlana Nichyk (Ukraine)",
+            "Ruslan Pavlovskyi (Ukraine)",
+            "Oleksandr Rozumnyi (Ukraine)",
+            "Roman Semchuk (Ukraine)",
+            "Sergii Baidiuk (Ukraine)",
+            "Andrii Tymenko (Ukraine)",
+            "Ada (ILO)",
+            "Rumsha (ILO)",
+            "Tetyana (ILO)",
+            "ITCILO (Testing)",
+            "Guest"
+        ];
+
+        const questions = [
+            { id: 'storage', label: 'Data Storage', question: 'How are your core labour inspection records stored?' },
+            { id: 'integration', label: 'Data Integration', question: 'How connected are your data systems?' },
+            { id: 'targeting', label: 'Targeting & Risk', question: 'How do you identify which workplaces to inspect?' },
+            { id: 'quality', label: 'Data Quality', question: 'How is data quality managed?' },
+            { id: 'analytics', label: 'Analytics & Reporting', question: 'How do you analyze and report inspection data?' },
+            { id: 'technology', label: 'Technology & Capacity', question: 'What technology and training are available?' }
+        ];
+
+        const levels = [
+            { level: 1, name: 'Analog', color: '#ef4444' },
+            { level: 2, name: 'Digitized', color: '#f97316' },
+            { level: 3, name: 'Integrated', color: '#eab308' },
+            { level: 4, name: 'Analytical', color: '#22c55e' },
+            { level: 5, name: 'Predictive/AI', color: '#06b6d4' }
+        ];
+
+        const characteristics = {
+            1: 'Paper-based records; limited digital documentation',
+            2: 'Digital systems exist but operate in silos; limited cross-system communication',
+            3: 'Multiple systems linked to external registers; foundational data sharing',
+            4: 'Routine trend analysis; manual risk scoring; organized dashboards',
+            5: 'ML-powered predictions; explainable AI outputs; proactive risk identification'
+        };
+
+        const nextSteps = {
+            1: 'Digitize core datasets and establish data entry standards',
+            2: 'Link systems to external labour registers and national databases',
+            3: 'Implement routine data quality checks and trend analysis processes',
+            4: 'Pilot machine learning models for predictive targeting',
+            5: 'Expand to multi-risk models; integrate real-time monitoring'
+        };
+
+        let currentState = { selectedName: '', answers: {} };
+
+        function renderParticipants(filter = '') {
+            const list = document.getElementById('participantList');
+            list.innerHTML = '';
+            const filtered = participants.filter(p => p.toLowerCase().includes(filter.toLowerCase()));
+            filtered.forEach(name => {
+                const btn = document.createElement('button');
+                btn.className = 'participant-btn';
+                btn.textContent = name;
+                btn.onclick = () => selectParticipant(name);
+                list.appendChild(btn);
+            });
+        }
+
+        function selectParticipant(name) {
+            currentState.selectedName = name;
+            currentState.answers = {};
+            showQuestions();
+        }
+
+        function showQuestions() {
+            document.getElementById('nameScreen').classList.add('hidden');
+            document.getElementById('questionsScreen').classList.remove('hidden');
+            document.getElementById('selectedNameDisplay').textContent = currentState.selectedName;
+            
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            questions.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'question-group';
+                div.innerHTML = `
+                    <div class="label">${q.label}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${[1,2,3,4,5].map(level => `
+                            <button class="option" onclick="answer('${q.id}', ${level})" data-q="${q.id}" data-level="${level}">
+                                ${level}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function answer(qId, level) {
+            currentState.answers[qId] = level;
+            updateProgress();
+            document.querySelectorAll(`[data-q="${qId}"]`).forEach(btn => {
+                btn.classList.remove('selected');
+                if(parseInt(btn.dataset.level) === level) btn.classList.add('selected');
+            });
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(currentState.answers).length;
+            const progress = (answered / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${answered} of ${questions.length} answered`;
+            document.getElementById('submitBtn').disabled = answered < questions.length;
+        }
+
+        function submitAnswers() {
+            const values = Object.values(currentState.answers);
+            const avg = Math.round(values.reduce((a,b)=>a+b,0) / values.length);
+            const level = Math.max(1, Math.min(5, avg));
+            
+            const categoryScores = questions.map(q => ({ ...q, score: currentState.answers[q.id] || 0 }));
+            
+            let html = `
+                <div class="level-badge" style="background: linear-gradient(135deg, ${levels[level-1].color} 0%, ${levels[level-1].color} 100%);">
+                    Level ${level}: ${levels[level-1].name}
+                </div>
+            `;
+            
+            categoryScores.forEach(cat => {
+                html += `
+                    <div class="category-result">
+                        <div class="category-name">${cat.label}</div>
+                        <div class="category-bar">
+                            <div class="category-bar-fill" style="width: ${(cat.score/5)*100}%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="characteristics">
+                    <div class="char-title">Level ${level} Characteristics:</div>
+                    <div class="char-item">${characteristics[level]}</div>
+                </div>
+                <div class="next-steps">
+                    <div class="next-title">Next Steps:</div>
+                    <div class="next-item">${nextSteps[level]}</div>
+                </div>
+            `;
+            
+            document.getElementById('resultNameDisplay').textContent = currentState.selectedName;
+            document.getElementById('resultsContent').innerHTML = html;
+            document.getElementById('questionsScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+        }
+
+        function goBack() {
+            document.getElementById('questionsScreen').classList.add('hidden');
+            document.getElementById('nameScreen').classList.remove('hidden');
+        }
+
+        function startOver() {
+            currentState = { selectedName: '', answers: {} };
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('nameScreen').classList.remove('hidden');
+            renderParticipants();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderParticipants(e.target.value);
+        });
+
+        renderParticipants();
+    </script>
+</body>
+</html>
