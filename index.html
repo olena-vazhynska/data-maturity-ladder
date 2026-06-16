@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Maturity Ladder - Labour Inspection</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             min-height: 100vh;
             display: flex;
@@ -19,7 +17,7 @@
             padding: 20px;
         }
         .container {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+            background: rgba(15, 23, 42, 0.95);
             border-radius: 16px;
             padding: 40px;
             max-width: 900px;
@@ -30,9 +28,8 @@
         .header { text-align: center; margin-bottom: 40px; }
         .header h1 { color: #e2e8f0; font-size: 28px; font-weight: bold; margin-bottom: 8px; }
         .header p { color: #cbd5e1; font-size: 14px; }
-        .section { margin-bottom: 30px; }
         .label { color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        select, input {
+        input {
             width: 100%;
             padding: 12px;
             background: rgba(30, 41, 59, 0.8);
@@ -40,14 +37,35 @@
             color: #e2e8f0;
             border-radius: 8px;
             font-size: 14px;
+            font-family: inherit;
         }
-        select:focus, input:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1); }
+        input:focus { outline: none; border-color: #60a5fa; }
+        .participant-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .participant-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            color: #e2e8f0;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: left;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .participant-btn:hover { border-color: #60a5fa; background: rgba(30, 41, 59, 1); }
         .question-group { background: rgba(51, 65, 85, 0.3); padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid rgba(71, 85, 105, 0.3); }
         .question-text { color: #e2e8f0; font-size: 14px; font-weight: 500; margin-bottom: 12px; }
         .options { display: flex; gap: 10px; flex-wrap: wrap; }
         .option {
             flex: 1;
-            min-width: 100px;
+            min-width: 60px;
             padding: 10px;
             background: rgba(30, 41, 59, 0.8);
             border: 1px solid rgba(71, 85, 105, 0.5);
@@ -57,6 +75,8 @@
             font-size: 13px;
             text-align: center;
             transition: all 0.2s;
+            font-family: inherit;
+            font-weight: 600;
         }
         .option:hover { border-color: #60a5fa; }
         .option.selected { background: #3b82f6; color: white; border-color: #2563eb; }
@@ -71,9 +91,10 @@
             font-size: 14px;
             transition: all 0.2s;
             width: 100%;
+            font-family: inherit;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:hover { transform: translateY(-2px); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .progress-bar {
             background: rgba(71, 85, 105, 0.3);
             height: 4px;
@@ -82,10 +103,9 @@
             overflow: hidden;
         }
         .progress-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); height: 100%; transition: width 0.3s; }
-        .results { margin-top: 30px; }
+        .progress-text { color: #cbd5e1; text-align: center; margin-bottom: 20px; font-size: 13px; }
         .level-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
             padding: 12px 24px;
             border-radius: 8px;
@@ -104,31 +124,65 @@
         .category-bar-fill { background: linear-gradient(90deg, #3b82f6, #8b5cf6); height: 100%; transition: width 0.3s; }
         .characteristics { background: rgba(51, 65, 85, 0.3); padding: 16px; border-radius: 8px; margin-top: 20px; }
         .char-title { color: #e2e8f0; font-weight: 600; margin-bottom: 12px; }
-        .char-item { color: #cbd5e1; font-size: 13px; margin-bottom: 8px; }
+        .char-item { color: #cbd5e1; font-size: 13px; }
         .next-steps { background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #3b82f6; }
         .next-title { color: #e2e8f0; font-weight: 600; margin-bottom: 10px; }
-        .next-item { color: #cbd5e1; font-size: 13px; margin-bottom: 6px; }
-        .ladder-viz { margin-top: 30px; }
-        .ladder-level { display: flex; align-items: center; margin-bottom: 12px; }
-        .ladder-label { color: #cbd5e1; font-size: 12px; width: 120px; }
-        .ladder-bar { flex: 1; height: 20px; background: rgba(71, 85, 105, 0.3); border-radius: 4px; margin: 0 12px; }
-        .ladder-bar.active { background: linear-gradient(90deg, #3b82f6, #8b5cf6); }
+        .next-item { color: #cbd5e1; font-size: 13px; }
         .button-group { display: flex; gap: 10px; margin-top: 20px; }
         .button-group button { flex: 1; }
         .hidden { display: none; }
         @media (max-width: 640px) {
             .container { padding: 20px; }
             .header h1 { font-size: 22px; }
-            .options { gap: 8px; }
-            .option { min-width: 80px; padding: 8px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script>
-        const { useState } = React;
+    <div class="container">
+        <!-- NAME SELECTION SCREEN -->
+        <div id="nameScreen">
+            <div class="header">
+                <h1>Data Maturity Ladder</h1>
+                <p>Labour Inspection Digital Transformation Assessment</p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div class="label">Select Your Name</div>
+                <input id="searchInput" type="text" placeholder="Search for your name..." />
+            </div>
+            <div class="participant-list" id="participantList"></div>
+        </div>
 
+        <!-- QUESTIONS SCREEN -->
+        <div id="questionsScreen" class="hidden">
+            <div class="header">
+                <h1>Assessment Questions</h1>
+                <p id="selectedNameDisplay" style="margin-top: 8px; color: #cbd5e1;"></p>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar" style="width: 0%;"></div>
+            </div>
+            <div class="progress-text" id="progressText">0 of 6 answered</div>
+            <div id="questionsContainer"></div>
+            <div class="button-group">
+                <button onclick="goBack()">Back</button>
+                <button id="submitBtn" onclick="submitAnswers()" disabled>See Results</button>
+            </div>
+        </div>
+
+        <!-- RESULTS SCREEN -->
+        <div id="resultsScreen" class="hidden">
+            <div class="header">
+                <h1>Your Assessment Results</h1>
+                <p id="resultNameDisplay" style="margin-top: 8px; color: #cbd5e1;"></p>
+            </div>
+            <div id="resultsContent"></div>
+            <div class="button-group">
+                <button onclick="startOver()" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
         const participants = [
             "Matheus Alves Klein Viana (Brazil)",
             "Mlungisi Mdumseni Mabuza (Eswatini)",
@@ -170,7 +224,7 @@
             { id: 'technology', label: 'Technology & Capacity', question: 'What technology and training are available?' }
         ];
 
-        const maturityLevels = [
+        const levels = [
             { level: 1, name: 'Analog', color: '#ef4444' },
             { level: 2, name: 'Digitized', color: '#f97316' },
             { level: 3, name: 'Integrated', color: '#eab308' },
@@ -194,176 +248,129 @@
             5: 'Expand to multi-risk models; integrate real-time monitoring'
         };
 
-        function DataMaturityLadder() {
-            const [stage, setStage] = useState('name'); // 'name', 'questions', 'results'
-            const [selectedName, setSelectedName] = useState('');
-            const [searchTerm, setSearchTerm] = useState('');
-            const [answers, setAnswers] = useState({});
+        let currentState = { selectedName: '', answers: {} };
 
-            const filteredParticipants = participants.filter(p =>
-                p.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            const handleNameSelect = (name) => {
-                setSelectedName(name);
-                setAnswers({});
-                setStage('questions');
-            };
-
-            const handleAnswer = (questionId, value) => {
-                setAnswers({ ...answers, [questionId]: value });
-            };
-
-            const calculateResults = () => {
-                const values = Object.values(answers).map(Number);
-                const average = values.length > 0 ? Math.round(values.reduce((a, b) => a + b) / values.length) : 1;
-                return Math.max(1, Math.min(5, average));
-            };
-
-            const overallLevel = calculateResults();
-
-            const renderNameSelection = () => (
-                <div className="container">
-                    <div className="header">
-                        <h1>Data Maturity Ladder</h1>
-                        <p>Labour Inspection Digital Transformation Assessment</p>
-                    </div>
-                    <div className="section">
-                        <div className="label">Select Your Name</div>
-                        <input
-                            type="text"
-                            placeholder="Search for your name..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div style={{ maxHeight: '400px', overflowY: 'auto', marginTop: '20px' }}>
-                        {filteredParticipants.map((participant, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => handleNameSelect(participant)}
-                                style={{
-                                    marginBottom: '10px',
-                                    background: 'rgba(30, 41, 59, 0.8)',
-                                    color: '#e2e8f0',
-                                    border: '1px solid rgba(71, 85, 105, 0.5)',
-                                    padding: '12px',
-                                    width: '100%',
-                                    textAlign: 'left'
-                                }}
-                            >
-                                {participant}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            );
-
-            const renderQuestions = () => {
-                const answeredCount = Object.keys(answers).length;
-                const progress = (answeredCount / questions.length) * 100;
-
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <h1>Assessment Questions</h1>
-                            <p style={{ marginTop: '8px', color: '#cbd5e1' }}>{selectedName}</p>
-                        </div>
-                        <div className="progress-bar">
-                            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-                        </div>
-                        <div style={{ color: '#cbd5e1', textAlign: 'center', marginBottom: '20px', fontSize: '13px' }}>
-                            {answeredCount} of {questions.length} answered
-                        </div>
-                        {questions.map((q) => (
-                            <div key={q.id} className="question-group">
-                                <div className="label">{q.label}</div>
-                                <div className="question-text">{q.question}</div>
-                                <div className="options">
-                                    {[1, 2, 3, 4, 5].map((level) => (
-                                        <button
-                                            key={level}
-                                            onClick={() => handleAnswer(q.id, level)}
-                                            className={`option ${answers[q.id] === level ? 'selected' : ''}`}
-                                            style={{
-                                                background: answers[q.id] === level ? '#3b82f6' : 'rgba(30, 41, 59, 0.8)',
-                                                color: answers[q.id] === level ? 'white' : '#cbd5e1',
-                                                border: answers[q.id] === level ? '1px solid #2563eb' : '1px solid rgba(71, 85, 105, 0.5)'
-                                            }}
-                                        >
-                                            {level}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                        <div className="button-group" style={{ marginTop: '30px' }}>
-                            <button onClick={() => { setStage('name'); setSelectedName(''); setAnswers({}); }} style={{ background: 'rgba(71, 85, 105, 0.5)' }}>Back</button>
-                            <button onClick={() => setStage('results')} disabled={answeredCount < questions.length}>See Results</button>
-                        </div>
-                    </div>
-                );
-            };
-
-            const renderResults = () => {
-                const categoryScores = questions.map(q => ({ ...q, score: answers[q.id] || 0 }));
-
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <h1>Your Assessment Results</h1>
-                            <p style={{ marginTop: '8px', color: '#cbd5e1' }}>{selectedName}</p>
-                        </div>
-                        <div className="results">
-                            <div className="level-badge" style={{ background: `linear-gradient(135deg, ${maturityLevels[overallLevel - 1].color} 0%, ${maturityLevels[overallLevel - 1].color} 100%)` }}>
-                                Level {overallLevel}: {maturityLevels[overallLevel - 1].name}
-                            </div>
-                            <div style={{ marginBottom: '30px' }}>
-                                {categoryScores.map(cat => (
-                                    <div key={cat.id} className="category-result">
-                                        <div className="category-name">{cat.label}</div>
-                                        <div className="category-bar">
-                                            <div className="category-bar-fill" style={{ width: `${(cat.score / 5) * 100}%` }}></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="characteristics">
-                                <div className="char-title">Level {overallLevel} Characteristics:</div>
-                                <div className="char-item">{characteristics[overallLevel]}</div>
-                            </div>
-                            <div className="next-steps">
-                                <div className="next-title">Next Steps:</div>
-                                <div className="next-item">{nextSteps[overallLevel]}</div>
-                            </div>
-                            <div className="ladder-viz">
-                                <div style={{ color: '#cbd5e1', fontWeight: '600', marginBottom: '16px', fontSize: '14px' }}>Your Position on the Maturity Ladder:</div>
-                                {[1, 2, 3, 4, 5].map(level => (
-                                    <div key={level} className="ladder-level">
-                                        <div className="ladder-label">Level {level}: {maturityLevels[level - 1].name}</div>
-                                        <div className="ladder-bar" style={{ background: level <= overallLevel ? maturityLevels[level - 1].color : 'rgba(71, 85, 105, 0.3)' }}></div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="button-group" style={{ marginTop: '30px' }}>
-                            <button onClick={() => { setStage('name'); setSelectedName(''); setAnswers({}); setSearchTerm(''); }} style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)' }}>Start Over</button>
-                        </div>
-                    </div>
-                );
-            };
-
-            return (
-                <>
-                    {stage === 'name' && renderNameSelection()}
-                    {stage === 'questions' && renderQuestions()}
-                    {stage === 'results' && renderResults()}
-                </>
-            );
+        function renderParticipants(filter = '') {
+            const list = document.getElementById('participantList');
+            list.innerHTML = '';
+            const filtered = participants.filter(p => p.toLowerCase().includes(filter.toLowerCase()));
+            filtered.forEach(name => {
+                const btn = document.createElement('button');
+                btn.className = 'participant-btn';
+                btn.textContent = name;
+                btn.onclick = () => selectParticipant(name);
+                list.appendChild(btn);
+            });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<DataMaturityLadder />);
+        function selectParticipant(name) {
+            currentState.selectedName = name;
+            currentState.answers = {};
+            showQuestions();
+        }
+
+        function showQuestions() {
+            document.getElementById('nameScreen').classList.add('hidden');
+            document.getElementById('questionsScreen').classList.remove('hidden');
+            document.getElementById('selectedNameDisplay').textContent = currentState.selectedName;
+            
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            questions.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'question-group';
+                div.innerHTML = `
+                    <div class="label">${q.label}</div>
+                    <div class="question-text">${q.question}</div>
+                    <div class="options">
+                        ${[1,2,3,4,5].map(level => `
+                            <button class="option" onclick="answer('${q.id}', ${level})" data-q="${q.id}" data-level="${level}">
+                                ${level}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function answer(qId, level) {
+            currentState.answers[qId] = level;
+            updateProgress();
+            document.querySelectorAll(`[data-q="${qId}"]`).forEach(btn => {
+                btn.classList.remove('selected');
+                if(parseInt(btn.dataset.level) === level) btn.classList.add('selected');
+            });
+        }
+
+        function updateProgress() {
+            const answered = Object.keys(currentState.answers).length;
+            const progress = (answered / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${answered} of ${questions.length} answered`;
+            document.getElementById('submitBtn').disabled = answered < questions.length;
+        }
+
+        function submitAnswers() {
+            const values = Object.values(currentState.answers);
+            const avg = Math.round(values.reduce((a,b)=>a+b,0) / values.length);
+            const level = Math.max(1, Math.min(5, avg));
+            
+            const categoryScores = questions.map(q => ({ ...q, score: currentState.answers[q.id] || 0 }));
+            
+            let html = `
+                <div class="level-badge" style="background: linear-gradient(135deg, ${levels[level-1].color} 0%, ${levels[level-1].color} 100%);">
+                    Level ${level}: ${levels[level-1].name}
+                </div>
+            `;
+            
+            categoryScores.forEach(cat => {
+                html += `
+                    <div class="category-result">
+                        <div class="category-name">${cat.label}</div>
+                        <div class="category-bar">
+                            <div class="category-bar-fill" style="width: ${(cat.score/5)*100}%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="characteristics">
+                    <div class="char-title">Level ${level} Characteristics:</div>
+                    <div class="char-item">${characteristics[level]}</div>
+                </div>
+                <div class="next-steps">
+                    <div class="next-title">Next Steps:</div>
+                    <div class="next-item">${nextSteps[level]}</div>
+                </div>
+            `;
+            
+            document.getElementById('resultNameDisplay').textContent = currentState.selectedName;
+            document.getElementById('resultsContent').innerHTML = html;
+            document.getElementById('questionsScreen').classList.add('hidden');
+            document.getElementById('resultsScreen').classList.remove('hidden');
+        }
+
+        function goBack() {
+            document.getElementById('questionsScreen').classList.add('hidden');
+            document.getElementById('nameScreen').classList.remove('hidden');
+        }
+
+        function startOver() {
+            currentState = { selectedName: '', answers: {} };
+            document.getElementById('searchInput').value = '';
+            document.getElementById('resultsScreen').classList.add('hidden');
+            document.getElementById('nameScreen').classList.remove('hidden');
+            renderParticipants();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            renderParticipants(e.target.value);
+        });
+
+        renderParticipants();
     </script>
 </body>
 </html>
